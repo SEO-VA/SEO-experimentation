@@ -7,6 +7,7 @@ import pandas as pd
 from urllib.parse import urljoin
 from google.colab import files
 import os
+import datetime
 
 # Session with customized adapter settings for improved performance
 session = requests.Session()
@@ -91,12 +92,20 @@ def save_results(all_matches):
         else:
             print(f"No links to {target_url} were found within the article tags.")
 
+def extract_and_process_base_urls(target_urls):
+    base_urls = {url.split('://')[1].split('/')[0] for url in target_urls}
+    all_sitemap_urls = []
+    for base_url in base_urls:
+        protocol = 'https://' if 'https://' in base_url else 'http://'
+        full_base_url = f"{protocol}{base_url}"
+        sitemap_urls = get_sitemap_urls(full_base_url)
+        all_sitemap_urls.extend(sitemap_urls)
+    return fetch_sitemap_urls(all_sitemap_urls)
+
 def main():
-    base_url = input("Enter the homepage URL of the site: ")
     target_urls_input = input("Enter the URLs of the pages you're looking for links to, separated by a comma: ")
     target_urls = [url.strip() for url in target_urls_input.split(',')]
-    sitemap_urls = get_sitemap_urls(base_url)
-    site_urls = fetch_sitemap_urls(sitemap_urls)
+    site_urls = extract_and_process_base_urls(target_urls)
 
     all_matches = crawl_and_search(site_urls, target_urls)
     save_results(all_matches)
