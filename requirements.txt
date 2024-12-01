@@ -1,1 +1,9 @@
 beautifulsoup4
+requests
+concurrent.futures
+re
+csv
+ET
+pd
+files
+urlparse, urljoin
