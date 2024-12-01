@@ -1,9 +1,3 @@
-beautifulsoup4
 requests
-concurrent.futures
-re
-csv
-ET
-pd
-files
-urlparse, urljoin
+beautifulsoup4
+pandas
