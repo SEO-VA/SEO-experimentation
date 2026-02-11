@@ -24,17 +24,17 @@ def log(message, level="INFO"):
     """Print formatted log message with timestamp."""
     timestamp = time.strftime("%H:%M:%S")
     icons = {
-        "INFO": "ℹ️",
-        "SUCCESS": "✅",
-        "WARNING": "⚠️",
-        "ERROR": "❌",
-        "PROGRESS": "🔄",
-        "START": "🚀",
-        "SEARCH": "🔍",
-        "SAVE": "💾"
+        "INFO": "i",
+        "SUCCESS": "+",
+        "WARNING": "!",
+        "ERROR": "X",
+        "PROGRESS": "~",
+        "START": ">",
+        "SEARCH": "?",
+        "SAVE": "*"
     }
-    icon = icons.get(level, "•")
-    print(f"[{timestamp}] {icon} {message}")
+    icon = icons.get(level, "-")
+    print(f"[{timestamp}] [{icon}] {message}")
 
 def get_sitemap_urls(base_url):
     """Fetch sitemap index and return list of sitemap URLs."""
@@ -95,7 +95,7 @@ def fetch_and_search(url, target_urls_set):
         soup = BeautifulSoup(response.content, 'html.parser')
         article = soup.find('article')
         if not article:
-            return {}, False  # No article found
+            return {}, False
         
         results = {target_url: [] for target_url in target_urls_set}
         links = [(urljoin(url, link.get('href', '')), link.get_text(strip=True)) for link in article.find_all('a')]
@@ -144,11 +144,9 @@ def crawl_and_search(site_urls, target_urls):
                 if matches:
                     all_matches[target_url].extend(matches)
                     total_matches += len(matches)
-                    # Log each match as it's found
                     for source_url, anchor in matches:
-                        log(f"Found link! '{anchor}' → {target_url[:50]}...", "SEARCH")
+                        log(f"Found link! '{anchor}' -> {target_url[:50]}...", "SEARCH")
             
-            # Progress update every 50 pages or at milestones
             if completed % 50 == 0 or completed == len(site_urls):
                 elapsed = time.time() - start_time
                 rate = completed / elapsed if elapsed > 0 else 0
@@ -213,7 +211,7 @@ def extract_and_process_base_urls(target_urls):
 
 def main():
     print("\n" + "="*60)
-    print("   🔗 INTERNAL LINKS MAPPER")
+    print("   INTERNAL LINKS MAPPER")
     print("   Find all internal links pointing to specific pages")
     print("="*60 + "\n")
     
@@ -232,7 +230,7 @@ def main():
     print("\n" + "-"*60)
     log(f"Searching for internal links to {len(target_urls)} target URL(s):", "SEARCH")
     for url in target_urls:
-        print(f"   • {url}")
+        print(f"   - {url}")
     print("-"*60 + "\n")
     
     site_urls = extract_and_process_base_urls(target_urls)
@@ -253,39 +251,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
-
-## What's New
-
-| Feature | Description |
-|---------|-------------|
-| **Timestamped logs** | Every message shows the time `[HH:MM:SS]` |
-| **Visual icons** | Different icons for different message types (✅❌⚠️🔄🚀🔍💾) |
-| **Progress with ETA** | Shows completion %, matches found, and estimated time remaining |
-| **Real-time match alerts** | Logs each link as soon as it's found |
-| **Better error messages** | Specific errors for timeout, HTTP errors, XML parsing |
-| **Summary stats** | Shows pages with `<article>` tags, total time, total matches |
-| **Nice header/footer** | Clear visual separation of the tool |
-
-## Sample Output
-```
-[14:32:01] 🚀 Searching for internal links to 1 target URL(s):
-   • https://example.com/best-casinos/
-
-[14:32:01] 🔄 Fetching sitemap index: https://example.com/wp-sitemap.xml
-[14:32:02] ✅ Found 8 sitemaps in index
-[14:32:02] 🔄 Fetching URLs from 8 sitemaps...
-[14:32:04] 🔄 Processed 8/8 sitemaps (342 URLs so far)
-[14:32:04] ✅ Total URLs collected: 342
-
-[14:32:04] 🚀 Starting crawl of 342 pages...
-[14:32:15] 🔍 Found link! 'top rated casinos' → https://example.com/best-casinos/...
-[14:32:18] 🔄 Progress: 50/342 pages (14.6%) | Matches: 1 | ETA: 45s
-[14:32:31] 🔍 Found link! 'our casino guide' → https://example.com/best-casinos/...
-...
-[14:33:12] ✅ Crawl complete in 68.4 seconds
-[14:33:12] ℹ️ Pages with <article> tag: 298/342
-[14:33:12] ℹ️ Total links found: 7
-
-[14:33:12] 💾 Saved 7 links for https://example.com/best-casinos/
-[14:33:12] 💾 Downloading: internal_links_best-casinos_7_found.csv
